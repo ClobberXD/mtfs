@@ -1,7 +1,15 @@
 mtfs = {}
-mtfs.planes = {}
+
+local planes = {}
 
 local function verify_def(def)
+	def.size = def.size or 1
+	def.attachment_offset = def.attachment_offset or {x = 0, y = 0, z = 0}
+
+	return def
+end
+
+local function on_step(self, dtime)
 
 end
 
@@ -15,18 +23,27 @@ local function on_lclick(self, puncher)
 end
 
 local function on_rclick(self, clicker)
+	local def = planes[self.name]
+
 	if not clicker:get_attach() then
-		clicker:set_attach(self.object, "", attach, {x = 0, y = 0, z = 0})
-		clicker:set_properties({ visual_size = {x = 0, y = 0} })
+		clicker:set_attach(self.object, "", def.attachment_offset, {x = 0, y = 0, z = 0})
+		clicker:set_properties({
+			visual_size = {
+				x = 1 / def.size,
+				y = 1 / def.size,
+				z = 1 / def.size
+			}
+		})
 	else
 		clicker:set_detach()
-		clicker:set_properties({ visual_size = {x = 0, y = 0} })
+		clicker:set_properties({ visual_size = {x = 1, y = 1, z = 1} })
 	end
 end
 
 function mtfs.register_aircraft(name, def)
-	verify_def(def)
 	assert(not planes[name], "Attempting to register plane with an existing name!")
+
+	def = verify_def(def)
 
 	minetest.register_entity("name", {
 		initial_properties = {
